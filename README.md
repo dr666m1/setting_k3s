@@ -65,7 +65,7 @@ sudo /etc/init.d/netfilter-persistent reload
 
 # k3sの設定
 [日本語ドキュメント](https://rancher.co.jp/pdfs/K3s-eBook4Styles0507.pdf)が参考になる。
-`kubeclt`で`sudo`を使わなくてすむインストール方法もあるようだが、
+`kubeclt`で[`sudo`を使わなくてすむインストール方法](https://rancher.com/docs/k3s/latest/en/installation/install-options/how-to-flags/#example-a-k3s-kubeconfig-mode)もあるようだが、
 [ここ](https://github.com/rancher/k3s/issues/389)のやりとり見ると推奨されていないっぽい...？
 masterノードで何も実行したくない場合は、[古いドキュメント](https://www.rancher.co.jp/docs/k3s/latest/en/installation/)によると`curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable-agent" sh -`
 を使えるが、[isuue](https://github.com/rancher/k3s/issues/978)によると推奨されておらず、taintを使うべき。
