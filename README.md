@@ -60,6 +60,7 @@ sudo /etc/init.d/netfilter-persistent reload
 -A INPUT -p tcp --dport  6443 -j ACCEPT
 -A INPUT -p udp --dport  8472 -j ACCEPT
 -A INPUT -p tcp --dport 10250 -j ACCEPT
+-A INPUT -p tcp --dport  8501 -j ACCEPT
 ```
 
 
