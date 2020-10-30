@@ -55,11 +55,15 @@ sudo /etc/init.d/netfilter-persistent reload
 ```
 
 - デフォルトの設定に以下を追記している（ドキュメントの該当部分は[ここ](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)）
+- kubernetesが6443, 8472, 10250
+- 8080はhelm用？
+- 8501は当初はstreamlit
 
 ```
 -A INPUT -p tcp --dport  6443 -j ACCEPT
 -A INPUT -p udp --dport  8472 -j ACCEPT
 -A INPUT -p tcp --dport 10250 -j ACCEPT
+-A INPUT -p tcp --dport  8080 -j ACCEPT
 -A INPUT -p tcp --dport  8501 -j ACCEPT
 ```
 
@@ -80,6 +84,19 @@ curl -sfL https://get.k3s.io | K3S_URL=https://xxx.xxx.xx.xx:6443 K3S_TOKEN=myno
 ```
 mynodetokenはサーバー側で`sudo cat /var/lib/rancher/k3s/server/node-token`を実行して確認。
 
+
+# helm
+- [ここ](https://helm.sh/docs/intro/quickstart/)見てやってみる
+- `helm repo add stable ...`はどうせやらないから不要かも
+```
+curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+sudo apt-get install apt-transport-https --yes
+echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+
+helm repo add stable https://charts.helm.sh/stable
+```
 
 # 調べること
 - コンパートメント
