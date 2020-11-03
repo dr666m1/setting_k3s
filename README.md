@@ -56,14 +56,12 @@ sudo /etc/init.d/netfilter-persistent reload
 
 - デフォルトの設定に以下を追記している（ドキュメントの該当部分は[ここ](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)）
 - kubernetesが6443, 8472, 10250
-- 8080はhelm用？
 - 8501は当初はstreamlit
 
 ```
 -A INPUT -p tcp --dport  6443 -j ACCEPT
 -A INPUT -p udp --dport  8472 -j ACCEPT
 -A INPUT -p tcp --dport 10250 -j ACCEPT
--A INPUT -p tcp --dport  8080 -j ACCEPT
 -A INPUT -p tcp --dport  8501 -j ACCEPT
 ```
 
@@ -88,6 +86,7 @@ mynodetokenはサーバー側で`sudo cat /var/lib/rancher/k3s/server/node-token
 # helm
 - [ここ](https://helm.sh/docs/intro/quickstart/)見てやってみる
 - `helm repo add stable ...`はどうせやらないから不要かも
+
 ```
 curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
 sudo apt-get install apt-transport-https --yes
@@ -95,7 +94,18 @@ echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt
 sudo apt-get update
 sudo apt-get install helm
 
-helm repo add stable https://charts.helm.sh/stable
+#helm repo add stable https://charts.helm.sh/stable
+
+echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
+
+```
+
+環境変数に設定するだけではなく`--kubeconfig $KUBECONFIG`のように書かないといけないので`.bashrc`にこれ書いておくとよい。
+
+```
+h () {
+  sudo helm "$@" --kubeconfig=$KUBECONFIG
+}
 ```
 
 # 調べること
@@ -106,3 +116,6 @@ helm repo add stable https://charts.helm.sh/stable
 # 試していること
 - iptablesの設定勉強した方がよさそう
 - まずはk3s以外でポートがちゃんと開放されるか確認する
+
+# memo
+- k3sではDNSがうまく動作しない[問題](https://github.com/rancher/k3s/issues/1527)があるようだ
