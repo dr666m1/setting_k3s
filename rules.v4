@@ -18,6 +18,7 @@
 -A INPUT -p udp --dport 8472 -j ACCEPT
 -A INPUT -p tcp --dport 8501 -j ACCEPT
 -A INPUT -p tcp --dport  443 -j ACCEPT
+-A INPUT -p udp --dport   53 -j ACCEPT
 sudo iptables -I INPUT 1 -i cni0 -s 10.42.0.0/16 -j ACCEPT
 sudo iptables -I FORWARD 1 -s 10.42.0.0/16 -j ACCEPT
 #
