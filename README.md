@@ -134,3 +134,15 @@ iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
     - やるなら[ここ](https://opensource.com/article/20/3/ssl-letsencrypt-k3s)参考。
 
 - 公開方法の選択肢は[ここ](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
+
+- user group
+    - 再起動の度に`chmod`が初期化されるらしい。`chgrp`は初期化されない
+    - `--write-kubeconfig-mode 640`
+    - `sudo`なしだと`kubectl get all`で問題が生じるが、[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題なさそう。
+      進歩
+
+```
+sudo groupadd k3s
+sudo usermod k3s `whoami`
+sudo chgrp k3s /etc/rancher/k3s/k3s.yaml
+```
