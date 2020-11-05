@@ -119,3 +119,18 @@ h () {
 
 # memo
 - k3sではDNSがうまく動作しない[問題](https://github.com/rancher/k3s/issues/1527)があるようだ
+    - いや、以下のコマンドをインストール前に実行することで解決した。
+    - 参考にしたのは[ここ](https://atelierhsn.com/2020/01/k3s-on-oracle-cloud/)
+    - 永続化は[ここ](https://qiita.com/yas-nyan/items/e5500cf67236d11cce72)
+
+```
+iptables -I FORWARD -s 10.0.0.0/8 -j ACCEPT
+iptables -I FORWARD -d 10.0.0.0/8 -j ACCEPT
+iptables -I INPUT   -s 10.0.0.0/8 -j ACCEPT
+iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
+```
+
+- cert-managerも使いたい
+    - やるなら[ここ](https://opensource.com/article/20/3/ssl-letsencrypt-k3s)参考。
+
+- 公開方法の選択肢は[ここ](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
