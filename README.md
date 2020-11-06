@@ -124,10 +124,21 @@ h () {
     - 永続化は[ここ](https://qiita.com/yas-nyan/items/e5500cf67236d11cce72)
 
 ```
-iptables -I FORWARD -s 10.0.0.0/8 -j ACCEPT
-iptables -I FORWARD -d 10.0.0.0/8 -j ACCEPT
-iptables -I INPUT   -s 10.0.0.0/8 -j ACCEPT
-iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
+# firewall setting
+sudo iptables -I FORWARD -s 10.0.0.0/8 -j ACCEPT
+sudo iptables -I FORWARD -d 10.0.0.0/8 -j ACCEPT
+sudo iptables -I INPUT   -s 10.0.0.0/8 -j ACCEPT
+sudo iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
+sudo /etc/init.d/netfilter-persistent save
+sudo /etc/init.d/netfilter-persistent reload
+
+# install k3s
+curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 640
+
+# create k3s group
+sudo groupadd k3s
+sudo usermod -aG k3s `whoami`
+sudo chgrp k3s /etc/rancher/k3s/k3s.yaml
 ```
 
 - cert-managerも使いたい
@@ -140,9 +151,8 @@ iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
     - `--write-kubeconfig-mode 640`
     - `sudo`なしだと`kubectl get all`で問題が生じるが、[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題なさそう。
       進歩
-
-```
-sudo groupadd k3s
-sudo usermod k3s `whoami`
-sudo chgrp k3s /etc/rancher/k3s/k3s.yaml
-```
+- CI/CD
+    - k3s側でGithubを監視する方法、GithubActionsからk3sにアクセスする方法の2通り考えられる
+    - 前者を実現するためにArgoCDなどのツールがあるが、メモリが厳しい
+    - 後者は[これ](https://github.com/rancher/k3s/issues/1381)によるとIPアドレスを指定して許可する必要があるが、
+    GithubActions側のIPアドレスが分からないので難しそう
