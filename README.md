@@ -55,30 +55,35 @@ sudo kubectl taint nodes server master=true:NoExecute
 
 スクリプトについて何点か補足。
 - [ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
-- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。
+- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。`sudo`なしの`kubectl get all`でエラーを確認したが[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題ない。
 - taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
 
 ### helmのインストール
 
 ```
+# install helm
 curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
 sudo apt-get install apt-transport-https --yes
 echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 sudo apt-get update
 sudo apt-get install helm
 #helm repo add stable https://charts.helm.sh/stable
+
+# environment variable
+echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> $HOME/.bashrc
 ```
 
 ### おまけ
-
+alias追加用スクリプト。
 ```
-echo 'alias k="kubectl"' > $HOME/.bashrc
-echo 'alias h="helm --kubeconfig=/etc/rancher/k3s/k3s.yaml"' > $HOME/.bashrc
+echo 'alias k="kubectl"' >> $HOME/.bashrc
+echo 'alias h="helm"' >> $HOME/.bashrc
 ```
 
 ## k3s-agent
 **ローカルで**以下を実行。
-```
+
+```sh
 K3S_SERVER_IP=`ssh -G k3s-server | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
 K3S_SERVER_TOKEN=`ssh k3s-server sudo cat /var/lib/rancher/k3s/server/node-token`
 ssh k3s-agent echo  "export K3S_SERVER_IP=$K3S_SERVER_IP >> /home/ubuntu/.bashrc"
@@ -86,7 +91,8 @@ ssh k3s-agent echo  "export K3S_SERVER_token=$K3S_SERVER_IP >> /home/ubuntu/.bas
 ```
 
 k3s-agentで以下を実行。
-```
+
+```sh
 # firewall setting
 sudo iptables -I FORWARD -s 10.0.0.0/8 -j ACCEPT
 sudo iptables -I FORWARD -d 10.0.0.0/8 -j ACCEPT
@@ -99,28 +105,12 @@ sudo /etc/init.d/netfilter-persistent reload
 ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
 ```
 
-を使えるが、[isuue]()によると推奨されておらず、taintを使うべき。
 
 
-環境変数に設定するだけではなく`--kubeconfig $KUBECONFIG`のように書かないといけないので`.bashrc`にこれ書いておくとよい。
 
-# memo
-- k3sではDNSがうまく動作しない[問題](https://github.com/rancher/k3s/issues/1527)があるようだ
-    - いや、以下のコマンドをインストール前に実行することで解決した。
-    - 参考にしたのは[ここ](https://atelierhsn.com/2020/01/k3s-on-oracle-cloud/)
-    - 永続化は[ここ](https://qiita.com/yas-nyan/items/e5500cf67236d11cce72)
-
-
-- cert-managerも使いたい
-    - やるなら[ここ](https://opensource.com/article/20/3/ssl-letsencrypt-k3s)参考。
 
 - 公開方法の選択肢は[ここ](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
 
-- user group
-    - 再起動の度に`chmod`が初期化されるらしい。`chgrp`は初期化されない
-    - `--write-kubeconfig-mode 640`
-    - `sudo`なしだと`kubectl get all`で問題が生じるが、[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題なさそう。
-      進歩
 - CI/CD
     - k3s側でGithubを監視する方法、GithubActionsからk3sにアクセスする方法の2通り考えられる
     - 前者を実現するためにArgoCDなどのツールがあるが、メモリが厳しい
