@@ -29,7 +29,11 @@ Host k3s-agent
 # VMの操作
 ## k3s-server
 ### k3sのインストール
-以下のスクリプトを実行する。なお`init_server.sh`として保存している。
+以下のスクリプトを実行。
+[ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)
+に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
+グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。
+taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
 
 ```sh
 # firewall setting
@@ -50,7 +54,7 @@ sudo chgrp k3s /etc/rancher/k3s/k3s.yaml
 sudo chgrp k3s /var/lib/rancher/k3s/server/node-token
 
 # taint master node
-kubectl taint nodes worker master=true:NoExecute
+sudo kubectl taint nodes server master=true:NoExecute
 ```
 
 ### helmのインストール
@@ -72,37 +76,32 @@ echo 'alias h="helm --kubeconfig=/etc/rancher/k3s/k3s.yaml"' > $HOME/.bashrc
 ```
 
 ## k3s-agent
-以下を**ローカルで**実行。
+**ローカルで**以下を実行。
 ```
-K3S_SERVER_IP=`ssh -G oracle | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
-K3S_SERVER_TOKEN=`ssh oracle sudo cat /var/lib/rancher/k3s/server/node-token`
+K3S_SERVER_IP=`ssh -G k3s-server | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
+K3S_SERVER_TOKEN=`ssh k3s-server sudo cat /var/lib/rancher/k3s/server/node-token`
+ssh k3s-agent echo  "export K3S_SERVER_IP=$K3S_SERVER_IP >> /home/ubuntu/.bashrc"
+ssh k3s-agent echo  "export K3S_SERVER_token=$K3S_SERVER_IP >> /home/ubuntu/.bashrc"
+```
+
+k3s-agentで以下を実行。
+```
+# firewall setting
+sudo iptables -I FORWARD -s 10.0.0.0/8 -j ACCEPT
+sudo iptables -I FORWARD -d 10.0.0.0/8 -j ACCEPT
+sudo iptables -I INPUT   -s 10.0.0.0/8 -j ACCEPT
+sudo iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
+sudo /etc/init.d/netfilter-persistent save
+sudo /etc/init.d/netfilter-persistent reload
+
+# install k3s
 ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
 ```
 
-## 補足
-- netfilter-persistent経由でiptablesの設定が行われているらしい。
-- デフォルトの設定に以下を追記している（ドキュメントの該当部分は[ここ](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)）
-
-# k3sの設定
-[ここ](https://github.com/rancher/k3s/issues/389)のやりとり見ると推奨されていないっぽい...？
-を使えるが、[isuue](https://github.com/rancher/k3s/issues/978)によると推奨されておらず、taintを使うべき。
-
-
-
-# helsh -G oracle | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+]'
+を使えるが、[isuue]()によると推奨されておらず、taintを使うべき。
 
 
 環境変数に設定するだけではなく`--kubeconfig $KUBECONFIG`のように書かないといけないので`.bashrc`にこれ書いておくとよい。
-
-
-# 調べること
-- コンパートメント
-- VNIC
-    - instanceごとにあるようだ
-
-# 試していること
-- iptablesの設定勉強した方がよさそう
-- まずはk3s以外でポートがちゃんと開放されるか確認する
 
 # memo
 - k3sではDNSがうまく動作しない[問題](https://github.com/rancher/k3s/issues/1527)があるようだ
