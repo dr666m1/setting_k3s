@@ -105,13 +105,9 @@ sudo /etc/init.d/netfilter-persistent reload
 ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
 ```
 
-
-
-
-
-- 公開方法の選択肢は[ここ](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
-
-- CI/CD
+# メモ
+- NodePort・LoadBalancerなどの比較は[この記事](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
+- CI/CDについても検討したが、以下の理由から無料枠では厳しい。
     - k3s側でGithubを監視する方法、GithubActionsからk3sにアクセスする方法の2通り考えられる
-    - 前者を実現するためにArgoCDなどのツールがあるが、メモリが厳しい
-    - 後者は[これ](https://github.com/rancher/k3s/issues/1381)によるとIPアドレスを指定して許可する必要があるが、GithubActions側のIPアドレスが分からないので難しそう
+    - 前者を実現する[ArgoCD]()などのツールはあるが、メモリが厳しい
+    - 後者はIPアドレスを指定する必要があるが、GithubActionsのIPアドレスが分からないため難しい（[参考](https://github.com/rancher/k3s/issues/1381)）
