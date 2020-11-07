@@ -30,10 +30,6 @@ Host k3s-agent
 ## k3s-server
 ### k3sのインストール
 以下のスクリプトを実行。
-[ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)
-に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
-グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。
-taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
 
 ```sh
 # firewall setting
@@ -56,6 +52,11 @@ sudo chgrp k3s /var/lib/rancher/k3s/server/node-token
 # taint master node
 sudo kubectl taint nodes server master=true:NoExecute
 ```
+
+スクリプトについて何点か補足。
+- [ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
+- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。
+- taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
 
 ### helmのインストール
 
