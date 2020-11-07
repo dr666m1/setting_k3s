@@ -11,7 +11,7 @@ oracle cloud infrastractureの無料枠でkubernetesを構築するための手�
 - NetworkSecurityGroupを指定（事前に適切に作成する必要あり）
 - 公開キー・ファイルの選択からローカルの`id_rsa.pub`をアップロード
 
-# ローカルPCの操作
+# ローカルでの操作
 ## sshの設定
 `~/.ssh/config`を以下のようにするれば、`ssh k3s-server`だけでssh接続できる。
 
@@ -28,6 +28,7 @@ Host k3s-agent
 
 # VMの操作
 ## k3s-server
+### k3sのインストール
 以下のスクリプトを実行する。なお`init_server.sh`として保存している。
 
 ```sh
@@ -52,8 +53,26 @@ sudo chgrp k3s /var/lib/rancher/k3s/server/node-token
 kubectl taint nodes worker master=true:NoExecute
 ```
 
+### helmのインストール
+
+```
+curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+sudo apt-get install apt-transport-https --yes
+echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+#helm repo add stable https://charts.helm.sh/stable
+```
+
+### おまけ
+
+```
+echo 'alias k="kubectl"' > $HOME/.bashrc
+echo 'alias h="helm --kubeconfig=/etc/rancher/k3s/k3s.yaml"' > $HOME/.bashrc
+```
+
 ## k3s-agent
-以下を**ローカルPC**で実行。
+以下を**ローカルで**実行。
 ```
 K3S_SERVER_IP=`ssh -G oracle | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
 K3S_SERVER_TOKEN=`ssh oracle sudo cat /var/lib/rancher/k3s/server/node-token`
@@ -70,22 +89,8 @@ ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443
 
 
 
-# helm
-- [ここ](https://helm.sh/docs/intro/quickstart/)見てやってみる
-- `helm repo add stable ...`はどうせやらないから不要かも
+# helsh -G oracle | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+]'
 
-```
-curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-sudo apt-get install apt-transport-https --yes
-echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-sudo apt-get update
-sudo apt-get install helm
-
-#helm repo add stable https://charts.helm.sh/stable
-
-echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
-
-```
 
 環境変数に設定するだけではなく`--kubeconfig $KUBECONFIG`のように書かないといけないので`.bashrc`にこれ書いておくとよい。
 
