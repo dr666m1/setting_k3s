@@ -29,7 +29,7 @@ Host k3s-agent
 # VMの操作
 ## k3s-server
 ### k3sのインストール
-以下のスクリプトを実行。
+以下を実行（`k3s_server.sh`）。
 
 ```sh
 # firewall setting
@@ -51,16 +51,7 @@ sudo chgrp k3s /var/lib/rancher/k3s/server/node-token
 
 # taint master node
 sudo kubectl taint nodes server master=true:NoExecute
-```
 
-スクリプトについて何点か補足。
-- [ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
-- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。`sudo`なしの`kubectl get all`でエラーを確認したが[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題ない。
-- taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
-
-### helmのインストール
-
-```
 # install helm
 curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
 sudo apt-get install apt-transport-https --yes
@@ -73,15 +64,13 @@ sudo apt-get install helm
 echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> $HOME/.bashrc
 ```
 
-### おまけ
-alias追加用スクリプト。
-```
-echo 'alias k="kubectl"' >> $HOME/.bashrc
-echo 'alias h="helm"' >> $HOME/.bashrc
-```
+スクリプトについて何点か補足。
+- [ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
+- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。`sudo`なしの`kubectl get all`でエラーを確認したが[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題ない。
+- taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
 
 ## k3s-agent
-**ローカルで**以下を実行。
+**ローカルで**以下を実行（`k3s_agent_local.sh`）。
 
 ```sh
 K3S_SERVER_IP=`ssh -G k3s-server | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
@@ -90,7 +79,7 @@ ssh k3s-agent echo  "export K3S_SERVER_IP=$K3S_SERVER_IP >> /home/ubuntu/.bashrc
 ssh k3s-agent echo  "export K3S_SERVER_token=$K3S_SERVER_IP >> /home/ubuntu/.bashrc"
 ```
 
-k3s-agentで以下を実行。
+k3s-agentで以下を実行（`k3s_agent.sh`）。
 
 ```sh
 # firewall setting
@@ -107,7 +96,7 @@ ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443
 
 # メモ
 - NodePort・LoadBalancerなどの比較は[この記事](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
-- CI/CDについても検討したが、以下の理由から無料枠では厳しい。
-    - k3s側でGithubを監視する方法、GithubActionsからk3sにアクセスする方法の2通り考えられる
-    - 前者を実現する[ArgoCD]()などのツールはあるが、メモリが厳しい
+- CI/CDについても検討したが、以下の理由から無料枠での実装は厳しい。
+    - k3s側でGithubを監視する方法、GithubActionsからk3sにアクセスする方法の2通りが考えられる
+    - 前者の方向性だと[ArgoCD](https://argoproj.github.io/argo-cd/)などのツールは存在するがメモリ不足
     - 後者はIPアドレスを指定する必要があるが、GithubActionsのIPアドレスが分からないため難しい（[参考](https://github.com/rancher/k3s/issues/1381)）
