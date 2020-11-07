@@ -23,7 +23,7 @@ Host k3s-server
 Host k3s-agent
     HostName yyy.yyy.yy.yy
     User ubuntu
-    ProxyCommand ssh -W %h:%p oracle
+    ProxyCommand ssh -W %h:%p k3s-server
 ```
 
 # VMの操作
@@ -55,7 +55,9 @@ kubectl taint nodes worker master=true:NoExecute
 ## k3s-agent
 以下を**ローカルPC**で実行。
 ```
-ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://`ssh -G oracle | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`:6443 K3S_TOKEN=`ssh oracle sudo cat /var/lib/rancher/k3s/server/node-token` sh -
+K3S_SERVER_IP=`ssh -G oracle | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
+K3S_SERVER_TOKEN=`ssh oracle sudo cat /var/lib/rancher/k3s/server/node-token`
+ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
 ```
 
 ## 補足
