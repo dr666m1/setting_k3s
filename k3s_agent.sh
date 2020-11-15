@@ -10,4 +10,4 @@ sudo /etc/init.d/netfilter-persistent save
 sudo /etc/init.d/netfilter-persistent reload
 
 # install k3s
-ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
+curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
