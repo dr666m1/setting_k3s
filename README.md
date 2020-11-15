@@ -1,5 +1,5 @@
 # 概要
-oracle cloud infrastractureの無料枠でkubernetesを構築するための手順。
+oracle cloud infrastractureの無料枠でkubernetes（[k3s](https://rancher.com/docs/k3s/latest/en/)）を構築するための手順。
 
 # コンソールの操作
 ## VMの作成
@@ -26,10 +26,16 @@ Host k3s-agent
     ProxyCommand ssh -W %h:%p k3s-server
 ```
 
+## ロードバランサの作成
+デフォルトからの変更点は以下。
+
+- AlwaysFreeの構成オプションを表示
+- バックエンドの追加でagentを選択
+- ヘルスチェックポリシーは緩和してもよい（k3s側でlivenessProbeなどを設定する前提）
+
 # VMの操作
 ## k3s-server
-### k3sのインストール
-以下を実行（`k3s_server.sh`）。
+k3s-serverで以下を実行（`k3s_server.sh`）。
 
 ```sh
 # firewall setting
@@ -66,7 +72,7 @@ echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> $HOME/.bashrc
 
 スクリプトについて何点か補足。
 - [ドキュメント](https://rancher.com/docs/k3s/latest/en/installation/installation-requirements/#networking)に記載のポートを許可するだけでは不具合があったため、VCNの通信は許可している。
-- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った。`sudo`なしの`kubectl get all`でエラーを確認したが[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題ない。
+- グループの作成はこの[issue](https://github.com/rancher/k3s/issues/389)に従った（helmからinsecureだと警告されるが無視）。`sudo`なしの`kubectl get all`でエラーを確認したが[ここ](https://github.com/kubernetes/kubernetes/issues/94362)によると問題ない。
 - taintはserverへのスケジュールを禁止する目的で、この[issue](https://github.com/rancher/k3s/issues/389)に従っている。
 
 ## k3s-agent

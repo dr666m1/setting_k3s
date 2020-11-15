@@ -12,6 +12,9 @@ sudo /etc/init.d/netfilter-persistent reload
 # install k3s
 curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 640
 
+# taint master node
+sudo kubectl taint nodes server master=true:NoExecute
+
 # create k3s group
 sudo groupadd k3s
 sudo usermod -aG k3s `whoami`
@@ -28,8 +31,6 @@ sudo apt-get install helm
 
 # environment variable
 echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> $HOME/.bashrc
-# taint master node
-sudo kubectl taint nodes server master=true:NoExecute
 
 # alias
 echo 'alias k="kubectl"' >> $HOME/.bashrc
