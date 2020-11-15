@@ -82,7 +82,7 @@ echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> $HOME/.bashrc
 K3S_SERVER_IP=`ssh -G k3s-server | grep -E 'hostname\s+[0-9.]+' | grep -o -E '[0-9.]+'`
 K3S_SERVER_TOKEN=`ssh k3s-server sudo cat /var/lib/rancher/k3s/server/node-token`
 ssh k3s-agent echo  "export K3S_SERVER_IP=$K3S_SERVER_IP >> /home/ubuntu/.bashrc"
-ssh k3s-agent echo  "export K3S_SERVER_token=$K3S_SERVER_IP >> /home/ubuntu/.bashrc"
+ssh k3s-agent echo  "export K3S_SERVER_TOKEN=$K3S_SERVER_TOKEN >> /home/ubuntu/.bashrc"
 ```
 
 k3s-agentで以下を実行（`k3s_agent.sh`）。
@@ -97,7 +97,7 @@ sudo /etc/init.d/netfilter-persistent save
 sudo /etc/init.d/netfilter-persistent reload
 
 # install k3s
-ssh k3s-agent curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
+curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3S_SERVER_TOKEN sh -
 ```
 
 # メモ
