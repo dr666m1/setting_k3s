@@ -44,7 +44,7 @@ sudo iptables -I FORWARD -d 10.0.0.0/8 -j ACCEPT
 sudo iptables -I INPUT   -s 10.0.0.0/8 -j ACCEPT
 sudo iptables -I INPUT   -d 10.0.0.0/8 -j ACCEPT
 sudo /etc/init.d/netfilter-persistent save
-sudo /etc/init.d/netfilter-persistent reload
+sudo /etc/init.d/netfilter-persistent reload # may not be necessary
 
 # install k3s
 curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 640
@@ -101,8 +101,11 @@ curl -sfL https://get.k3s.io | K3S_URL=https://$K3S_SERVER_IP:6443 K3S_TOKEN=$K3
 ```
 
 # メモ
+- k3sのアンインストール方法は[こちら](https://rancher.com/docs/k3s/latest/en/installation/uninstall/)
 - NodePort・LoadBalancerなどの比較は[この記事](https://www.thebookofjoel.com/bare-metal-kubernetes-ingress)が詳しい。
 - CI/CDについても検討したが、以下の理由から無料枠での実装は厳しい。
     - k3s側でGithubを監視する方法、GithubActionsからk3sにアクセスする方法の2通りが考えられる
     - 前者の方向性だと[ArgoCD](https://argoproj.github.io/argo-cd/)などのツールは存在するがメモリ不足
     - 後者はIPアドレスを指定する必要があるが、GithubActionsのIPアドレスが分からないため難しい（[参考](https://github.com/rancher/k3s/issues/1381)）
+- https対応も検討したが、[cert-manager](https://cert-manager.io/)の起動がメモリ不足で難しい
+    - もし実装するなら[この記事](https://opensource.com/article/20/3/ssl-letsencrypt-k3s)が参考になりそう。
